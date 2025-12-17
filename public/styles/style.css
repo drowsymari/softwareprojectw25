@@ -1,0 +1,118 @@
+.centerImg {
+    display: block;
+    margin: 0 auto;
+}
+
+.center {
+  text-align: center;
+}
+/* public/src/styles/style.css */
+:root {
+    --primary-bg: linear-gradient(135deg, #6e8efb, #a777e3);
+    --accent-orange: #ff7e5f;
+    --dark-nav: #1a1c23;
+    --glass-white: rgba(255, 255, 255, 0.95);
+    --text-main: #333;
+    --text-muted: #6c757d;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--primary-bg);
+    margin: 0;
+    color: var(--text-main);
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+/* Navbar */
+.custom-nav {
+    background: var(--dark-nav);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.nav-links a {
+    color: #bdc3c7;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.nav-links a:hover { color: white; }
+
+/* Banners */
+.welcome-banner {
+    background: var(--accent-orange);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    color: white;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.welcome-banner h1 { font-weight: 600; font-size: 2.2rem; margin-bottom: 10px; }
+
+/* Cards */
+.glass-card {
+    background: var(--glass-white);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+    border: none;
+}
+
+.card-header-custom {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.icon-small { margin-right: 12px; }
+
+/* Buttons */
+.btn-action {
+    width: 100%;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    transition: transform 0.2s;
+}
+
+.btn-action:hover { transform: translateY(-2px); }
+.btn-browse { background: var(--accent-orange); color: white; border: none; }
+.btn-outline-custom { border: 1px solid #ddd; background: white; color: #555; }
+
+/* List Styles */
+.step-list { list-style: none; padding: 0; }
+.step-list li { margin-bottom: 10px; font-size: 0.9rem; color: #555; }
+
+/* Components */
+.truck-card, .menu-item {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.price { color: #28a745; font-weight: bold; font-size: 1.1rem; }
+.category { color: var(--text-muted); font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+
+.badge-available { background: #d4edda; color: #155724; border-radius: 20px; padding: 5px 12px; }
+.badge-unavailable { background: #f8d7da; color: #721c24; border-radius: 20px; padding: 5px 12px; }

@@ -1,0 +1,247 @@
+{
+  "info": {
+    "name": "GIU FoodTruck Backend - Milestone 3",
+    "_postman_id": "giu-foodtruck-collection-2025",
+    "description": "Full Postman collection containing all 20 Milestone 3 endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mariam\",\n  \"email\": \"mariam@test.com\",\n  \"password\": \"1234\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": "http://localhost:3000/api/v1/auth/signup"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mariam@test.com\",\n  \"password\": \"1234\"\n}"
+            },
+            "url": "http://localhost:3000/api/v1/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trucks",
+      "item": [
+        {
+          "name": "View All Trucks",
+          "request": {"method": "GET", "url": "http://localhost:3000/api/v1/trucks/view"}
+        },
+        {
+          "name": "View My Truck (Owner)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/trucks/myTruck"
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"orderStatus\": \"unavailable\" }"
+            },
+            "url": "http://localhost:3000/api/v1/trucks/updateOrderStatus"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MenuItems",
+      "item": [
+        {
+          "name": "Create Menu Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Item\",\n  \"description\": \"Test\",\n  \"price\": 10,\n  \"category\": \"Snacks\"\n}"
+            },
+            "url": "http://localhost:3000/api/v1/menuItem/new"
+          }
+        },
+        {
+          "name": "Owner View All Menu Items",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/menuItem/view"
+          }
+        },
+        {
+          "name": "View Menu Item by ID",
+          "request": {"method": "GET", "url": "http://localhost:3000/api/v1/menuItem/view/1"}
+        },
+        {
+          "name": "Edit Menu Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"price\": 55.75 }"
+            },
+            "url": "http://localhost:3000/api/v1/menuItem/edit/1"
+          }
+        },
+        {
+          "name": "Delete Menu Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/menuItem/delete/1"
+          }
+        },
+        {
+          "name": "Public - View Truck Menu",
+          "request": {"method": "GET", "url": "http://localhost:3000/api/v1/menuItem/truck/1"}
+        },
+        {
+          "name": "Public - View Category Filter",
+          "request": {"method": "GET", "url": "http://localhost:3000/api/v1/menuItem/truck/1/category/Main%20Course"}
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"itemId\": 1, \"quantity\": 2 }"
+            },
+            "url": "http://localhost:3000/api/v1/cart/new"
+          }
+        },
+        {
+          "name": "View Cart",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/cart/view"
+          }
+        },
+        {
+          "name": "Edit Cart Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"quantity\": 3 }"
+            },
+            "url": "http://localhost:3000/api/v1/cart/edit/1"
+          }
+        },
+        {
+          "name": "Delete Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/cart/delete/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": "http://localhost:3000/api/v1/order/new"
+          }
+        },
+        {
+          "name": "My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/order/myOrders"
+          }
+        },
+        {
+          "name": "Order Details (Customer)",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/order/details/1"
+          }
+        },
+        {
+          "name": "Truck Owner - View Orders",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/order/truckOrders"
+          }
+        },
+        {
+          "name": "Truck Owner - Order Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "http://localhost:3000/api/v1/order/truckOwner/1"
+          }
+        },
+        {
+          "name": "Truck Owner - Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"orderStatus\": \"Ready\" }"
+            },
+            "url": "http://localhost:3000/api/v1/order/updateStatus/1"
+          }
+        }
+      ]
+    }
+  ]
+}

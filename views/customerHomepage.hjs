@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - GIU Food Truck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/bootstrap.min.css">
+    <link rel="stylesheet" href="./styles/style.css">
+</head>
+<body>
+
+<nav class="custom-nav">
+    <div>
+        <strong style="color: var(--accent-orange);">GIU</strong> FoodTruck
+    </div>
+    <div class="nav-links d-none d-md-block">
+        <a href="/customerHomepage">🚚 Dashboard</a>
+        <a href="#goToTrucks">🍔 Browse Trucks</a>
+        <a href="#" onclick="viewMyCart()">🛒 My Cart (<span id="cartCount">0</span>)</a>
+        <a href="#" onclick="viewMyOrders()">📋 My Orders</a>
+    </div>
+    <a href="#" onclick="logout()" style="color: var(--accent-orange); text-decoration: none; font-weight: 600;">Logout</a>
+</nav>
+
+<div class="container">
+    <div class="welcome-banner">
+        <div style="font-size: 2.5rem;">👋</div>
+        <h1>Welcome, <span id="userName">Customer</span>!</h1>
+        <p class="lead">Fresh campus meals are just a click away.</p>
+        <p><small style="opacity: 0.8;">Account: <span id="userEmail">customer@example.com</span></small></p>
+    </div>
+
+    <div id="dashboardView">
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px;">
+            <div class="glass-card">
+                <div class="card-header-custom"><span class="icon-small">🚀</span> Quick Actions</div>
+                <button class="btn btn-action btn-browse" onclick="browseTrucks()">Browse Food Trucks</button>
+                <button class="btn btn-action btn-outline-custom" onclick="viewMyCart()">View My Cart</button>
+                <button class="btn btn-action btn-outline-custom" id="checkoutBtn" onclick="checkout()" disabled>Fast Checkout</button>
+            </div>
+
+            <div class="glass-card">
+                <div class="card-header-custom"><span class="icon-small">📋</span> How It Works</div>
+                <ul class="step-list">
+                    <li><span class="icon-small">1. 🚛</span> Browse available food trucks</li>
+                    <li><span class="icon-small">2. 🍔</span> Select items from the menu</li>
+                    <li><span class="icon-small">3. 🛒</span> Add items to your cart</li>
+                    <li><span class="icon-small">4. 📅</span> Schedule your pickup time</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="mb-4 text-white" id="goToTrucks" style="font-weight: 600;">Available Food Trucks</h4>
+        <div class="row" id="trucksList">
+            <div class="col-md-12">
+                <p class="text-center text-white">Loading available trucks...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="menuSection" style="display: none;">
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 id="menuTitle" style="font-weight: 600; margin: 0;">Menu</h3>
+                <button class="btn btn-outline-secondary btn-sm" onclick="hideMenu()">← Back to Trucks</button>
+            </div>
+            <div class="row" id="menuItemsList"></div>
+        </div>
+    </div>
+
+    <div class="glass-card mt-4">
+        <div class="card-header-custom"><span class="icon-small">🛒</span> Current Cart Summary</div>
+        <div id="cartSummary">
+            <p class="text-center text-muted">Your cart is empty</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header" style="border: none;">
+                <h5 class="modal-title" style="font-weight: 600;">Confirm Order</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div id="checkoutSummary"></div>
+                <div class="form-group mt-3">
+                    <label for="pickupTime" style="font-weight: 600;">Pickup Time:</label>
+                    <input type="datetime-local" class="form-control" id="pickupTime" required>
+                </div>
+            </div>
+            <div class="modal-footer" style="border: none;">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-action btn-browse m-0" style="width: auto;" onclick="placeOrder()">Place Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/jquery-2.2.0.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+    let currentTruckId = null;
+    let currentTruckName = null;
+
+    $(document).ready(function() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        if (user.name) {
+            $('#userName').text(user.name);
+            $('#userEmail').text(user.email);
+        }
+
+        loadTrucks();
+        loadCart();
+    });
+
+    function loadTrucks() {
+        $.ajax({
+            url: '/api/v1/trucks/view',
+            method: 'GET',
+            success: function(trucks) {
+                const list = $('#trucksList');
+                list.empty();
+                if (trucks.length === 0) {
+                    list.html('<p class="text-center text-white">No trucks online right now.</p>');
+                    return;
+                }
+                trucks.forEach(truck => {
+                    const statusBadge = truck.orderstatus === 'available' ? 
+                        `<span class="badge-available">Open</span>` : 
+                        `<span class="badge-unavailable">Closed</span>`;
+                    
+                    const card = `
+                        <div class="col-md-4 mb-4">
+                            <div class="truck-card text-center">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">🚚</div>
+                                <h5>${truck.truckname}</h5>
+                                <div class="mb-3">${statusBadge}</div>
+                                ${truck.orderstatus === 'available' ? 
+                                    `<button class="btn btn-primary btn-sm btn-block" onclick="viewTruckMenu(${truck.truckid}, '${truck.truckname}')">View Menu</button>` : 
+                                    `<button class="btn btn-secondary btn-sm btn-block" disabled>Unavailable</button>`
+                                }
+                            </div>
+                        </div>`;
+                    list.append(card);
+                });
+            }
+        });
+    }
+
+    function viewTruckMenu(truckId, truckName) {
+        currentTruckId = truckId;
+        currentTruckName = truckName;
+        $.ajax({
+            url: `/api/v1/menuItem/truck/${truckId}`,
+            method: 'GET',
+            success: function(items) {
+                const list = $('#menuItemsList');
+                list.empty();
+                $('#menuTitle').text(`Menu: ${truckName}`);
+                
+                if (items.length === 0) {
+                    list.html('<div class="col-12"><p class="text-center">No items found.</p></div>');
+                } else {
+                    items.forEach(item => {
+                        const itemHtml = `
+                        <div class="col-md-6 mb-3">
+                            <div class="menu-item">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="mb-1">${item.name}</h5>
+                                    <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
+                                </div>
+                                <p class="category mb-2">${item.category}</p>
+                                <p class="small text-muted">${item.description || ''}</p>
+                                <div class="d-flex align-items-center mt-3">
+                                    <input type="number" id="qty-${item.itemid}" value="1" min="1" class="form-control form-control-sm mr-2" style="width: 60px;">
+                                    <button class="btn btn-success btn-sm flex-grow-1" onclick="addToCart(${item.itemid}, ${item.price}, '${item.name}')">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>`;
+                        list.append(itemHtml);
+                    });
+                }
+                $('#dashboardView').hide();
+                $('#menuSection').fadeIn();
+            }
+        });
+    }
+
+    function hideMenu() {
+        $('#menuSection').hide();
+        $('#dashboardView').fadeIn();
+    }
+
+    function addToCart(itemId, price, itemName) {
+        const quantity = parseInt($(`#qty-${itemId}`).val());
+        const token = localStorage.getItem('authToken');
+        
+        $.ajax({
+            url: '/api/v1/cart/new',
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            data: JSON.stringify({ itemId, quantity, price }),
+            success: function() {
+                alert(`${itemName} added!`);
+                loadCart();
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.error || "";
+                if (msg.includes('multiple trucks')) {
+                    if (confirm('Clear cart and switch to this truck?')) {
+                        clearCart().then(() => addToCart(itemId, price, itemName));
+                    }
+                } else {
+                    alert('Error: ' + msg);
+                }
+            }
+        });
+    }
+
+    function loadCart() {
+        const token = localStorage.getItem('authToken');
+        $.ajax({
+            url: '/api/v1/cart/view',
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token },
+            success: function(items) {
+                $('#cartCount').text(items.length);
+                const summary = $('#cartSummary');
+                const checkoutBtn = $('#checkoutBtn');
+                
+                if (items.length === 0) {
+                    summary.html('<p class="text-center text-muted">Your cart is empty</p>');
+                    checkoutBtn.prop('disabled', true);
+                    return;
+                }
+
+                checkoutBtn.prop('disabled', false);
+                let html = '<div class="table-responsive"><table class="table table-hover">';
+                let total = 0;
+                items.forEach(item => {
+                    const rowTotal = item.price * item.quantity;
+                    total += rowTotal;
+                    html += `<tr>
+                        <td><strong>${item.itemname}</strong><br><small>Qty: ${item.quantity}</small></td>
+                        <td class="text-right">$${rowTotal.toFixed(2)}</td>
+                        <td class="text-right"><button class="btn btn-link text-danger p-0" onclick="removeFromCart(${item.cartid})">Remove</button></td>
+                    </tr>`;
+                });
+                html += `</table><div class="text-right"><strong>Total: $${total.toFixed(2)}</strong></div></div>`;
+                summary.html(html);
+            }
+        });
+    }
+
+    function removeFromCart(id) {
+        const token = localStorage.getItem('authToken');
+        $.ajax({
+            url: `/api/v1/cart/delete/${id}`,
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token },
+            success: loadCart
+        });
+    }
+
+    async function clearCart() {
+        const token = localStorage.getItem('authToken');
+        const items = await $.ajax({ url: '/api/v1/cart/view', method: 'GET', headers: { 'Authorization': 'Bearer ' + token } });
+        for (const item of items) {
+            await $.ajax({ url: `/api/v1/cart/delete/${item.cartid}`, method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+        }
+        loadCart();
+    }
+
+    function checkout() {
+        const token = localStorage.getItem('authToken');
+        $.ajax({
+            url: '/api/v1/cart/view',
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token },
+            success: function(items) {
+                let total = 0;
+                items.forEach(i => total += (i.price * i.quantity));
+                $('#checkoutSummary').html(`<h5>Total Order Amount: $${total.toFixed(2)}</h5>`);
+                
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 20);
+                $('#pickupTime').val(now.toISOString().slice(0, 16));
+                $('#checkoutModal').modal('show');
+            }
+        });
+    }
+
+    function placeOrder() {
+        const pickup = $('#pickupTime').val();
+        const token = localStorage.getItem('authToken');
+        $.ajax({
+            url: '/api/v1/order/new',
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            data: JSON.stringify({ scheduledPickupTime: new Date(pickup).toISOString() }),
+            success: function() {
+                $('#checkoutModal').modal('hide');
+                alert('Order Placed Successfully!');
+                loadCart();
+            },
+            error: function(xhr) { alert(xhr.responseJSON?.error || 'Order failed'); }
+        });
+    }
+
+    function viewMyCart() {
+        loadCart();
+        alert('Cart refreshed. Check the "Current Cart Summary" section below.');
+    }
+
+    function viewMyOrders() {
+        const token = localStorage.getItem('authToken');
+        $.ajax({
+            url: '/api/v1/order/myOrders',
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token },
+            success: function(orders) {
+                if(orders.length === 0) return alert('No orders found');
+                let msg = 'My Orders:\n\n';
+                orders.forEach(o => msg += `#${o.orderid} - ${o.truckname} - ${o.orderstatus} - $${o.totalprice}\n`);
+                alert(msg);
+            }
+        });
+    }
+
+    function browseTrucks() {
+        window.location.href= '#goToTrucks';
+        hideMenu();
+        loadTrucks();
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+</body>
+</html>
