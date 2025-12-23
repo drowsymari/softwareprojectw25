@@ -1,4 +1,4 @@
-<img width="2999" height="1657" alt="image" src="https://github.com/user-attachments/assets/3dc7067d-0244-4d41-be87-16274c3e87b5" /># GIU FoodTruck Backend – Milestone 3  
+Milestone 3  
 **Course:** Software Engineering  
 **Semester:** Winter 2025  
 **Instructor:** Dr. Iman Awad  
